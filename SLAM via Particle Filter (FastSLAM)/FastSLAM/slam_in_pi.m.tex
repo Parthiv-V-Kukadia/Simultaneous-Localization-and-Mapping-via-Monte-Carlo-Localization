@@ -1,0 +1,79 @@
+\textbf{Please explain what ‘slam in pi.m’ function is trying to achieve.}\\
+The function is used for angular measurements to ensure that they are bounded/constrained within the specified ranges. Using this function helps the implementation of SLAM by making sure that the angular values are accurate and their is no numerical instability occurring throughout the calculations in SLAM by making the angular values consistent (e.g., 0 radians instead of 2$\pi$ radians). The smaller the values are, the easier it is for the SLAM algorithms to compute at a higher accuracy and avoid any jumping in values to cause instability in the simulated system. In our case, we are restricting the angles to be within the range of [-$\pi$,$\pi$], which will help our system in mitigating errors related to state estimations from inconsistent trigonometric calculations and will support the mapping process that we are using through SLAM. We tackle the 5 major issues using the slam in pi function:
+\begin{enumerate}
+    \item Eliminate the periodic nature of angles, where the function ensures that the value of the angular measurements will stay within the given range, and not provide values like -2$\pi$, when the value can be 0.
+    \item Normalize angles to maintain a consistent range of angles for calculations, such that the angles are all within the provided range when doing geometric transformations to avoid misinterpretation of orientation and position of points in the environment.
+    \item Avoid misinterpretation of data through normalizing angles so that when Kalman Filter is used in SLAM, the integration of multiple measurements and states are all in the same physical direction represented in the same way.
+    \item Ensure a stable system by allowing the algorithm to operate robustly having consistent angles bounded within a given range, which inturn improves the stability of the system and provides a better performance in real-time
+    \item Prevent causing errors in the SLAM algorithm by normalizing the angles to avoid divergence in the algorithm or producing inaccurate maps or localization due to higher/greater angular estimates.
+\end{enumerate}\\
+
+\textbf{Where are the locations this function is called. Why are they necessary?}\\
+Since the benefits of using the slam in Pi function can be seen and since we know their necessity, it has been implemented in a number of locations throughout our implementation of SLAM. We have used the Slam in Pi Function in 17 locations across all the matlab scripts:
+\begin{enumerate}
+    \item motion estimation.m
+    \begin{enumerate}
+        \item To calculate mahalanobis distance: Function used to handle the angular difference when calculating the distance, ensuring a normalized angular difference, ensuring the distance calculations accurately reflect true orientation difference, and to maintain a robust SLAM algorithm by handling angular wrap-around to support localization and feature matching
+        \begin{lstlisting}
+            % Components of x-mu
+		a = corners2(j).x-corners1(k).x;
+		b = corners2(j).y-corners1(k).y;
+		c = slam_in_pi(corners2(j).angle-corners1(k).angle);
+        \end{lstlisting}
+        \item Constraining theta change to be within a threshold: Function used to ensure smooth motion by avoiding any rapid changes in orientation, making sure that there is a consistent state estimate by having normalized angles, and adjusting the angles before using them in SLAM calculations for the robot's movement.
+        \begin{lstlisting}
+        % Constrain theta change to be within a threshold
+        if (slam_in_pi(theta - theta_pre) > 0.05)
+            theta = theta_pre + 0.05;
+        elseif (slam_in_pi(theta - theta_pre) < -0.05)
+            theta = theta_pre - 0.05;
+        end
+        theta = slam_in_pi(theta);  
+        \end{lstlisting}
+    \end{enumerate}
+    \item slam lidar split merge.m
+    \begin{enumerate}
+        \item Used to define theta: Function used to define theta for horizontal and vertical line if/else statement, to ensure that the calculations have normalized angles to ensure calculations are stable and accurate, which supports keeping the system stable regardless of the orientation of the line, mitigating numerical instability.
+    \end{enumerate}
+    \item slam lidar feat extrn.m
+    \begin{enumerate}
+        \item Calculate heading direction of the corner: Function used in constraining the heading direction of a corner feature to ensure that it is within the valid range of angles. This will support normalizing computed heading angles to stay in our calculation range, it will mitigate larger angles being recorded, and ensure that the heading angle is adjusted before being taken into consideration for trigonometric functions to ensure consistency
+        \begin{lstlisting}
+	% Calculate heading direction of the corner
+        heading1 = v1(1)/norm(v1) + v2(1)/norm(v2);
+        heading2 = v1(2)/norm(v1) + v2(2)/norm(v2);
+        heading = slam_in_pi(atan2(heading2, heading1) + pi);
+        \end{lstlisting}
+    \end{enumerate}
+    \item slam crnr loc2glo.m
+    \begin{enumerate}
+        \item Heading angle of detected corners: Function is used to ensure that after the heading angle is transformed to a global frame from the local frame, it is within the valid ranges of our function, to ensure the angles are normalized, they are consistently represented, and can be integrated with the SLAM algorithms being used. This normalization will also make sure that the variability in updated covariance reflects realistic uncertainty based on global frame orientation ensuring that uncertainty associated with the corner's position and orientation are reflected accurately.
+        \begin{lstlisting}
+        detected_corners_global(i).heading = slam_in_pi(detected_corners(i).heading + part_theta);
+        \end{lstlisting}
+    \end{enumerate}
+    \item slam crnr kf.m
+    \begin{enumerate}
+        \item Calculating innovation: Function used to calculate the innovation term in the Kalman filter, by normalizing the angular measurements and ensuring consistency in the heading and angle measurements to stay bounded within the specific range. It ensures that the calculations of innovation do not output erroneous results and the innovation vector is valid within our system, which will also reduce the system error propagation by ensuring that the estimations of state and covariance are not inaccurate due to un-normalized angles.
+        \begin{lstlisting}
+        % Calculate innovation 
+        heading_innov = slam_in_pi(detected_corner.heading - known_corner.heading);
+        angle_innov = slam_in_pi(detected_corner.angle - known_corner.angle);
+        innovation = [x_innov; y_innov; heading_innov; angle_innov];
+        \end{lstlisting}
+        \item Updating mean of the corner: Function used to update heading and angle of state estimates. Using the function will ensure that the update is not out of bounds, and causing an unstable system, but instead is resulting in an accurate and robust state estimate and system
+    \end{enumerate}
+    \item slam crnr jcbb assoc.m
+    \begin{enumerate}
+        \item Data association process using join compatibility branch and bound approach: Function is used to accurately calculate the Mahalanobis distance to support assessing the compatibility of two corners. This would affect the data association process, where normalized angles ensure that comparisons of different corners are valid as they are made within a bounded range.
+        \item Calculating joint innovation for multiple candidates: Function is used to ensure that the angle differences are normalized, and the join innovation vector in the Kalman filter framework has a heading and angle within the bounded range. This will ensure consistency across different candidates/points in the SLAM process and support proper matrix operations when estimating covariance, Kalman Gain, and state updates.
+    \end{enumerate}
+    \item slam.m
+    \begin{enumerate}
+        \item Ensure angle is wrapped within bound in motion prediction: Function used to ensure that angle is normalized and to avoid unbounded drift when adding random noise to the system. When implementing a particle filter, this also helps maintain consistency in representing different particles which would integrate into the SLAM framework more robustly and support the translation update step by ensuring that the heading is correctly defined within the bounded range.
+        \begin{lstlisting}
+        % Ensure the angle is wrapped within [-pi, pi]
+        particles(j).theta = slam_in_pi(particles(j).theta + delta_theta);
+        \end{lstlisting}
+    \end{enumerate}
+\end{enumerate}

@@ -1,0 +1,38 @@
+\textbf{Please explain all your filled-in codes with a snapshot of those lines of code. List formulas you have used for that part of code.}\\
+The matlab script is implementing a Kalman Filter through estimating the state of a system based on the noisy measurements and reflecting that onto the state estimates. The code iteratively estimates the state using predictions and noise observations and maintains an accurate estimate with uncertainty involved through using the kalman gain and innovation. The code used to completed the implementation of the Kalman Filter can be found in Fig (\ref{fig:SLAMcrnrkf.}). The equations used to complete the code are as follows:
+\begin{enumerate}
+    \item Updating the State
+    \begin{align}
+        \hat{x}_{new} = \hat{x}_{old} + K \cdot \nu
+    \end{align}
+    Where $\hat{x}$ is the estimated state, K is the Kalman Gain, and $\nu$ is the innovation
+    \begin{enumerate}
+        \item Innovation is the difference in the actual measurement and the predicted from the current state estimate
+        \item State estimate will include the position, heading, and angle, and will be the old estimate + some proportion of the innovation (decided by K)
+        \item Slam in Pi function was used when updating the mean of the corner's heading and angle because they are angular measurements. The Slam in Pi function is useful in making sure that the angles remain within the specified range.
+        \item The implementation of Slam in Pi supports consistency and stability as well as provides a better estimate and update process by constraining the angles to stay within a specific range to avoid numerical instability, maintain measurement consistency, and ensuring that angles are provided in a relative state to the system (e.g., 0 radians instead of 2$\pi$ radians).
+    \end{enumerate}
+    \item Updating the Covariance
+    \begin{align}
+        P_{new} = (I - K) P_{old}
+    \end{align}
+    Where K is the Kalman Gain, I is the Identity matrix, and P is the corner covariance.
+    \begin{enumerate}
+        \item Uncertainty is reduced in the state estimate with the inclusion of covariance
+    \end{enumerate}
+\end{enumerate}
+\begin{lstlisting}
+% Missing codes start here ...
+% Update mean of this corner 
+known_corner.x = known_corner.x + K(1,1) * innovation(1,1);
+known_corner.y = known_corner.y + K(2,2) * innovation(2,1);
+known_corner.heading = slam_in_pi(known_corner.heading + K(3,3) * innovation(3,1));
+known_corner.angle = slam_in_pi(known_corner.angle + K(4,4) * innovation(4,1));
+
+% Update covariance of this corner
+I = eye(size(K));
+known_corner.covariance = (I - K) * known_corner.covariance;
+% Missing codes end here ...
+\end{lstlisting}
+\captionof{figure}{MATLAB Code for Slam crnr kf}
+\label{fig:SLAMcrnrkf.}

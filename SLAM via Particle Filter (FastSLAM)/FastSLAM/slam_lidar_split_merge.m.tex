@@ -1,0 +1,64 @@
+\textbf{Please explain all your filled-in codes with a snapshot of those lines of code. List formulas you have used for that part of code.}\\
+For this part of the code, it is required to find the furthest point to the defined line. Begin by calculating the distance of a set of points from the defined line. Then update the values in the point distances array from the calculation made to calculate the distance of the different points from the line. Finally, find the largest distance of a point to the line by comparing it to the defined "winner value" which is the absolute value of the point distances array. We are provided the initialized values of the distance array, the winner values, and the winner index. The calculations to find the distance of a set of points from a line and finding the point that is furthest from the line can be done using the steps shown below, and the code can be found in Fig (\ref{fig:SLAMLidarMerge.}):\\
+\begin{enumerate}
+    \item Calculate the perpendicular distance from a point to a line
+    \begin{align}
+    d_k = \frac{|(x_2 - x_1)(y_1 - y_k) - (x_1 - x_k)(y_2 - y_1)|}{\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}}
+    \end{align}
+    Where $x_k, y_k$ are the coordinates of the point $P_k$, $x_1, y_1$ and $x_2, y_2$ are the coordinates of the two points defining the line, $d_k$ is the perpendicular distance from point $P_k$ to the line.
+    \begin{enumerate}
+        \item Calculating the shortest distance of the set of points to the line
+        \item This is done in a loop since there are multiple points that require the distance to be calculated for
+    \end{enumerate}
+    \item Finding the furthest point from the line
+    \begin{align*}
+        d_k \geq winner value
+    \end{align*}
+    \begin{enumerate}
+        \item Check to see if the current distance of the point is greater than the last furthest distance (winner value)
+        \item If the new points distance is greater than the last recorded longest distance, then we update the "winner value" to be that distance and we update the "winner index" to be the current value of k.
+    \end{enumerate}
+\end{enumerate}
+
+\begin{lstlisting}
+% Missing codes start here ...
+% Find furthest point to this line 
+point_distances = zeros(1, last);
+winner_value = abs(point_distances(1));
+winner_index = 1;
+
+for k = 1:last
+    % Loop over to calculate the distance of the different points from the line
+    distances = abs(((x2 - x1) * (y1 - point(k).y) - (x1 - points(k).x) * (y2 - y1)) / sqrt((x2 - x1)^2 + (y2 - y1)^2));
+    
+    % Update the values in point_distances matrix
+    point_distances(k) = distances;
+
+    % Finding the largest distance of a point to the line
+    if distances >= winner_value
+        winner_value = distances;
+        winner_index = k;
+    end
+end
+% Missing codes end here ..
+\end{lstlisting}
+\captionof{figure}{MATLAB Code for Slam Lidar split merge}
+\label{fig:SLAMLidarMerge.}\\
+
+\textbf{Please explain what problem is line 11-40 in the original ‘slam lidar split merge.m’ trying to solve? Why does the solution need to use if/else to consider two cases?}\\
+Lines 11-40 is solving finding the equation of a line in 2D space and then finding the angle $\theta$ and distance r related to the line. It is to identify the orientation and distance of the line when it is horizontal vs. vertical. 
+\begin{enumerate}
+    \item The code is used to calculate the equation of the line when it is more horizontal (|$x_2$ - $x_1$| > |$y_2$ - $y_1$|) and the line is expressed in the form y = mx + c
+    \item Else the code is used to calculate the equation of the line when it is more vertical (|$x_2$ - $x_1$| $\leq$ |$y_2$ - $y_1$|) and the line is expressed in the form x = my + c.
+    \begin{enumerate}
+        \item Horizontal case (y = mx+c), used when the change in x is greater than the change in y, and the gradient can be calculated using m = $\frac{y_2 - y_1}{x_2 - x_1}$, and y-intercept c = $y_1$ - m$x_1$.
+        \item Vertical case (x = my+c), used when the change in y is greater than or equal to the change in x, and the gradient can be calculated using m = $\frac{x_2 - x_1}{y_2 - y_1}$, and y-intercept c = $x_1$ - m$y_1$.
+    \end{enumerate}
+    \item The if/else structure is used to validate the relative magnitude of |$y_2$ - $y_1$| and |$x_2$ - $x_1$| to identify whether the line is actually more horizontal or more vertical, based on the identification, the code will switch between the horizontal or vertical calculation to ensure numerical stability.
+    \begin{enumerate}
+        \item Numerical stability: For lines where the slope is very steep, instead of expressing the line as y = mx + c, the line is expressed as x = my + c to ensure that the numerical instability is not so large, and the slope is a function of y to avoid large and extreme values
+        \item Angle calculation: The calculation is done differently for different orientations. If the line is more horizontal, $\theta$ is $tan^{-1}$(m), the slope, which is adjusted by $\frac{\pi}{2}$ to make sure that it is perpendicular to the line. If the line is more vertical, $\theta$ is adjusted to align properly with the geometry using $\frac{\pi}{2}$, where $\theta$ is ($\frac{\pi}{2}$ - $\theta$).
+        \item The distance can be calculated using the absolute value of c (the y-intercept) and cos ($\theta$), where the distance is $c x cos(\theta)$.
+    \end{enumerate}
+\end{enumerate}
+Therefore, the if/else structure allows for better adaptation of the code to various line orientations. This is done to ensure that the calculations are stable and accurate and regardless of the orientation of the line in space, we are able to keep the system stable, mitigating numerical instability.

@@ -1,0 +1,127 @@
+\documentclass{rapport}
+\usepackage{lipsum}
+\usepackage{gensymb}
+\usepackage{float}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{subcaption}
+%\usepackage[demo]{graphicx}
+\usepackage{tikz,pgfplots}
+\usepackage{amsmath, bm, amssymb,amsfonts,amsthm}
+\usepackage{float}
+\usepackage[version=4]{mhchem}
+\usepackage{siunitx}
+\usepackage{longtable,tabularx}
+\usepackage{makecell}
+\usepackage[labelfont=bf]{caption}
+ \usepackage{setspace}
+\usepackage[table]{xcolor}
+\usepackage[x11names,dvipsnames,table]{xcolor} %for use in color links
+\usepackage{colortbl}
+\usepackage[utf8]{inputenc}
+\usepackage{fontspec}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs} 
+
+% MATLAB style for listings
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\lstset{
+  language=Matlab,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue},
+  commentstyle=\color{darkgreen},
+  stringstyle=\color{red},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=5pt,
+  backgroundcolor=\color{lightgray!20},
+  showspaces=false,
+  showstringspaces=false,
+  tabsize=4,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  frame=single
+}
+% Set font as Calibri
+\setmainfont{Carlito}[
+    Path=./Carlito/,
+    Extension = .ttf,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    ItalicFont=*-Italic,
+    BoldItalicFont=*-BoldItalic
+    ]
+\title{file title} %title of the file
+
+
+\begin{document}
+%----------- Report information ---------
+
+\logo{Images/logos/nus_logo_full-vertical.jpg}
+\uni{\textbf{National University of Singapore\\
+EE5114: Autonomous Robot Navigation}}
+\ttitle{Implementing Simultaneous Localization and Mapping via a Particle Filter (FastSLAM)\\
+} %title of the file
+\subject{EE5114: Autonomous Robot Navigation} % Subject name
+
+\professor{Dr. Fei \textsc{WANG}} % information related to the professor
+
+\students{Parthiv Vinubhai Kukadia \textsc{(A0304932J)}} % information related to the students
+
+%----------- Init -------------------
+        
+\buildmargins % display margins
+\buildcover % create the front cover of the document
+
+%------------ Report body ----------------
+
+\section{Introduction}
+\label{Introduction}
+\input{Introduction/Introduction}
+
+
+\section{Nomenclature}
+\label{Nomenclature}
+\input{Introduction/Nomenclature}
+
+\pagebreak
+\section{Implementing FastSLAM}
+\label{Motion_estimation}
+The following section covers the 6 different parts edited in implementing FastSLAM via a Particle Filter for the UAV. The sections are titled the name of the Matlab script file, and they will include the code that was filled in, the theory behind the code, and the mathematical equations/formulas used to develop the code.
+\subsection{motion estimation.m}
+\input{FastSLAM/motion_estimation.m}
+
+\subsection{slam lidar feat extrn.m}
+\input{FastSLAM/slam_lidar_feat_extrn.m}
+
+\subsection{slam lidar split merge.m}
+\input{FastSLAM/slam_lidar_split_merge.m}
+
+\subsection{slam resample.m}
+\input{FastSLAM/slam_resample.m}
+
+\subsection{slam crnr kf.m}
+\input{FastSLAM/slam_crnr_kf.m}
+
+\subsection{slam.m}
+\input{FastSLAM/slam.m}
+
+\subsection{slam in pi.m}
+\input{FastSLAM/slam_in_pi.m}
+
+\pagebreak
+\section{Conclusion}
+\label{Conclusion}
+\input{Conclusion/Conclusion}
+
+\section*{Acknowledgments}
+\label{Acknowledgements}
+\input{Conclusion/Acknowledgements}
+
+\section*{References}
+1. Wang, F. (2024, Aug 4). "4. SLAM Part 1" [PDF]. National University of Singapore.\\
+https://canvas.nus.edu.sg/courses/62933
+
+\end{document}

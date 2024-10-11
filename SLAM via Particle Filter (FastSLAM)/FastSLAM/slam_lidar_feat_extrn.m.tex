@@ -1,0 +1,64 @@
+\textbf{Please explain all your filled-in codes with a snapshot of those lines of code. List formulas you have used for that part of code.}\\
+The lines of code filled in were related to vector algebra and geometric properties of line segments. The code starts by identifying the direction vectors of the lines, then normalizing the vectors, calculating the angle between the vectors, filtering based on angle ranges, and finally, computing the heading of the corner. Below, the equations used to calculate angle span of the corner and using corner features to calculate heading direction of the corner will be discussed, with the implemented code to be found in Fig. (\ref{fig:SLAMLidarExTRN.}).
+\begin{enumerate}
+    \item Define the direction vectors of the lines
+    \begin{align}
+     \mathbf{v}_1 = \begin{bmatrix} x_2 - x_1 \\ y_2 - y_1 \end{bmatrix}\\
+     \mathbf{v}_2 = \begin{bmatrix} x_4 - x_3 \\ y_4 - y_3 \end{bmatrix}
+    \end{align}
+    \begin{enumerate}
+        \item Where (x1,y1) and (x2,y2) for are the start and end points of the first (line(i)), and (x3,y3) and (x4,y4) are the start and end points for the second line (line (i+1)).
+        \item These vectors will represent the direction of the two line segments, which will be used to calculate the angle between the two lines
+    \end{enumerate}
+    \item Calculate the angle between vectors
+    \begin{align}
+    \theta = \cos^{-1} \left( \frac{\mathbf{v}_1 \cdot \mathbf{v}_2}{\|\mathbf{v}_1\| \|\mathbf{v}_2\|} \right)
+    \end{align}
+    where,
+    \begin{align*}
+    \mathbf{v}_1 \cdot \mathbf{v}_2 = (x_2 - x_1)(x_4 - x_3) + (y_2 - y_1)(y_4 - y_3)\\
+    \|\mathbf{v}_1\| = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}\\        \|\mathbf{v}_2\| = \sqrt{(x_4 - x_3)^2 + (y_4 - y_3)^2}
+    \end{align*}
+    \begin{enumerate}
+        \item Angle $\theta$ between the two vectors can be found using the dot product formula
+        \item The dot product requires you to find the magnitudes of both vectors, which are the euclidean normals of the vectors 
+    \end{enumerate}
+    \item Define angle range filter
+    \begin{enumerate}
+        \item For corners to be valid, the angle should be between 60\degree to 120\degree, but defined in radians since our system is operating in radians.
+        \item This filtering condition can help us identify what is a valid corner vs. what is not a valid corner
+    \end{enumerate}
+    \item Define the heading of the corner
+    \begin{align}
+    \text{heading} = \text{slam\_in\_pi}\left( \text{atan2}(\text{heading2}, \text{heading1}) + \pi \right)
+    \end{align}
+    Where, atan2 computes the angle between the vector components heading1 and heading2. Adding $\pi$ shifts the angle by 180 $\degree$. The function \texttt{slam\_in\_pi} ensures that the resulting angle lies within the range [- $\pi$, $\pi$], and heading1 and heading 2 can be calculated using:
+    \begin{align*}
+    \text{heading1} = \frac{v_1(1)}{\|\mathbf{v}_1\|} + \frac{v_2(1)}{\|\mathbf{v}_2\|}\\
+    \text{heading2} = \frac{v_1(2)}{\|\mathbf{v}_1\|} + \frac{v_2(2)}{\|\mathbf{v}_2\|}
+    \end{align*}
+    \begin{enumerate}
+        \item The heading direction of the corner is defined as the average of the angles between the two consecutive lines.
+        \item Define heading, using the slam in pi function, providing it our heading inputs for the corner. The function is used to normalize an angle so that it lies within the function range of [$-\pi,\pi$] radians
+    \end{enumerate}
+\end{enumerate}
+
+\begin{lstlisting}
+ % Missing codes start here ...
+    % Calculate the direction vector of the two lines
+    v1 = [lines(i).p2.x - lines(i).p1.x, lines(i).p2.y - lines(i).p1.y];
+    v2 = [lines(i+1).p2.x - lines(i+1).p1.x, lines(i+1).p2.y - lines(i+1).p1.y];
+
+    % Calculate angle span of the corner
+    angle = acos(dot(v1/norm(v1),v2/norm(v2))); % Normalize the vectors
+                
+    % Only use corner features having angle from 60 to 120 degrees 
+    if (angle > deg2rad(60) && angle < deg2rad(120))
+	% Calculate heading direction of the corner
+        heading1 = v1(1)/norm(v1) + v2(1)/norm(v2);
+        heading2 = v1(2)/norm(v1) + v2(2)/norm(v2);
+        heading = slam_in_pi(atan2(heading2, heading1) + pi);
+    % Missing codes end here ...
+\end{lstlisting}
+\captionof{figure}{MATLAB Code for Slam Lidar feat extrn}
+\label{fig:SLAMLidarExTRN.}
